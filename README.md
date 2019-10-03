@@ -202,3 +202,112 @@ CREATE TABLE PedidoItem (
 
 
 
+INSERT INTO PedidoItem (ID, IDPedido, IDProduto, Quantidade)
+VALUES (1, 1, 3, 10)
+
+INSERT INTO PedidoItem (ID, IDPedido, IDProduto, Quantidade)
+VALUES (2, 1, 5, 20)
+
+--Exercício: inserir 3 registros na tabela PedidoItem
+--para o Pedido ID = 2
+--Produtos: ID = 1 (Lapis de Cor), Quantidade = 10
+INSERT INTO PedidoItem (ID, IDPedido, IDProduto, Quantidade)
+VALUES (3, 2, 1, 10)
+
+--			ID = 3 (Livro), Quantidade = 20
+INSERT INTO PedidoItem (ID, IDPedido, IDProduto, Quantidade)
+VALUES (4, 2, 3, 20)
+
+--			ID = 5 (Caneta), Quantidade = 30
+INSERT INTO PedidoItem (ID, IDPedido, IDProduto, Quantidade)
+VALUES (5, 2, 5, 30)
+
+--JUNÇÃO DE TABELAS
+SELECT  PedidoItem.ID,
+		Produto.Nome,
+		PedidoItem.Quantidade
+FROM Pedido
+INNER JOIN PedidoItem ON (PedidoItem.IDPedido = Pedido.ID)
+INNER JOIN Produto ON (Produto.ID = PedidoItem.IDProduto)
+WHERE Pedido.ID = 1
+
+INSERT INTO Categoria (Nome) VALUES ('Fantasia')
+INSERT INTO Categoria (Nome) VALUES ('Ficção')
+
+INSERT INTO Livro (Titulo, DataPublicacao, 
+Edicao, CodigoSequencial, IDCategoria) 
+VALUES ('O Hobbit', CAST('2010-01-01' AS DATE), 12, 4232, 1)   
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Livro
+INNER JOIN Categoria ON (Categoria.ID = Livro.IDCategoria)
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Categoria
+INNER JOIN Livro ON (Categoria.ID = Livro.IDCategoria)
+
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Livro
+LEFT JOIN Categoria ON (Categoria.ID = Livro.IDCategoria)
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Categoria
+LEFT JOIN Livro ON (Categoria.ID = Livro.IDCategoria)
+
+INSERT INTO Livro (Titulo, DataPublicacao, 
+Edicao, CodigoSequencial, IDCategoria) 
+VALUES ('O Senhor dos Anéis', CAST('2010-01-01' AS DATE), 20, 5234423, 1)  
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Categoria
+LEFT JOIN Livro ON (Categoria.ID = Livro.IDCategoria)
+
+
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Categoria
+RIGHT JOIN Livro ON (Categoria.ID = Livro.IDCategoria)
+
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Livro
+RIGHT JOIN Categoria ON (Categoria.ID = Livro.IDCategoria)
+
+
+SELECT  Livro.Titulo,
+		Categoria.Nome
+FROM Livro
+INNER JOIN Categoria ON (Categoria.ID = Livro.IDCategoria)
+UNION
+SELECT  'Nenhum Livro',
+		'Nenhuma Categoria'
+
+INSERT INTO Autor VALUES ('Edgar Allan', 'Poe', CAST('1873-09-17' AS DATE))
+
+
+INSERT INTO Livro (Titulo, DataPublicacao, 
+Edicao, CodigoSequencial, IDCategoria) 
+VALUES ('Contos', CAST('2010-01-01' AS DATE), 10, 2123, 1)  
+
+INSERT INTO LivroAutor VALUES (3, 1)
+
+SELECT  Livro.Titulo AS Titulo,
+		Categoria.Nome AS Categoria,
+		'' AS Autor
+FROM Livro
+INNER JOIN Categoria ON (Categoria.ID = Livro.IDCategoria)
+UNION
+SELECT  Livro.Titulo AS Titulo,
+		'' AS Categoria,
+		Autor.Nome AS Autor
+FROM Livro
+INNER JOIN LivroAutor ON (LivroAutor.IDLivro = Livro.ID)
+INNER JOIN Autor ON (Autor.ID = LivroAutor.IDAUtor)
