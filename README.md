@@ -311,3 +311,287 @@ SELECT  Livro.Titulo AS Titulo,
 FROM Livro
 INNER JOIN LivroAutor ON (LivroAutor.IDLivro = Livro.ID)
 INNER JOIN Autor ON (Autor.ID = LivroAutor.IDAUtor)
+
+--exercicio
+
+--criar tabela estoque com campos id pk identity, 
+--quantidadeEstoque decimal(10,2), 
+--dataPosicao Date, 
+--IDProduto int
+
+--criar chave estrangeira referenciado a tabela Produto
+
+CREATE TABLE Estoque (
+	ID INT Primary Key Identity,
+	QuantidadeEstoque DECIMAL(10,2),
+	DataPosicao DATE,
+	IDProduto INT,
+	CONSTRAINT FK_Produto2 FOREIGN KEY(IDProduto) REFERENCES Produto(ID)
+)
+
+--ALTER TABLE Estoque ADD CONSTRAINT FK_Produto2 FOREIGN KEY(IDProduto) REFERENCES Produto(ID)
+
+--inserir registros para caneta, caderno e livro na tabela Estoque
+INSERT INTO Estoque (QuantidadeEstoque, DataPosicao, IDProduto) VALUES (10, GETDATE(), 3)
+INSERT INTO Estoque VALUES (30, GETDATE(), 4)
+INSERT INTO Estoque VALUES (50, GETDATE(), 5)
+
+select * from Estoque
+
+--fazer select para trazer nome do produto, quantidadeEstoque e dataPosicao. 
+--Trazer somente os produtos que tem estoque
+
+SELECT  Produto.Nome,
+		Estoque.QuantidadeEstoque,		
+		Estoque.DataPosicao
+FROM Produto
+INNER JOIN Estoque ON (Estoque.IDProduto = Produto.ID)
+
+--fazer o mesmo select acima, mas trazendo todos os produtos, 
+--independente de ter estoque. 
+
+SELECT  Produto.Nome,
+		ISNULL(Estoque.QuantidadeEstoque, 0) AS 'Quantidade Estoque',		
+		ISNULL(Estoque.DataPosicao, GETDATE()) AS 'Data Posição' 
+FROM Produto
+LEFT JOIN Estoque ON (Estoque.IDProduto = Produto.ID)
+
+--caso não seja necessário mostrar colunas da tabela Estoque,
+--apenas verificar se o produto tem estoque correspondente,
+--pode ser usado o comando EXISTS
+SELECT *
+FROM Produto
+WHERE EXISTS (SELECT * FROM Estoque WHERE Estoque.IDProduto = Produto.ID)
+
+--para filtrar período de data, usa-se o comando BETWEEN
+SELECT  Produto.Nome,
+		Estoque.QuantidadeEstoque,		
+		Estoque.DataPosicao
+FROM Produto
+INNER JOIN Estoque ON (Estoque.IDProduto = Produto.ID)
+WHERE Estoque.DataPosicao 
+BETWEEN CAST('2019-09-01' AS DATE) AND CAST('2019-10-30' AS DATE)
+
+
+select * from estoque
+
+select sum(QuantidadeEstoque)
+from estoque
+where IDProduto = 3
+
+
+select  Produto.Nome,
+		sum(Estoque.QuantidadeEstoque)
+from Estoque
+inner join Produto on (Produto.ID = Estoque.IDProduto)
+group by Produto.Nome
+
+select  Produto.Nome,
+		Estoque.QuantidadeEstoque
+from Estoque
+inner join Produto on (Produto.ID = Estoque.IDProduto)
+
+select  sum(Estoque.QuantidadeEstoque)
+from Estoque
+inner join Produto on (Produto.ID = Estoque.IDProduto)
+group by Produto.Nome
+
+
+--inserir registro na LivroTag relacionando 
+--registro da tabela tag com o correspondente na tabela Livro
+INSERT INTO Tag VALUES ('HOB') --O Hobbit
+INSERT INTO Tag VALUES ('SHA') --O Senhor dos Anéis
+
+INSERT INTO LivroTag VALUES (1, 1)
+INSERT INTO LivroTag VALUES (2, 2)
+
+--retornar titulo do livro e nome da tag
+--somente dos livros que tenham tag correspondente
+SELECT  Livro.Titulo,
+		Tag.Nome
+FROM Livro
+INNER JOIN LivroTag ON (LivroTag.IDLivro = Livro.ID)
+INNER JOIN Tag ON (Tag.ID = LivroTag.IDTag)
+
+INSERT INTO Tag VALUES ('HOB2') --O Hobbit
+INSERT INTO LivroTag VALUES (1, 3)
+
+--GROUP BY
+SELECT  Livro.Titulo,
+		COUNT(Tag.Nome)
+FROM Livro
+INNER JOIN LivroTag ON (LivroTag.IDLivro = Livro.ID)
+INNER JOIN Tag ON (Tag.ID = LivroTag.IDTag)
+GROUP BY Livro.Titulo
+
+
+--HAVING
+SELECT  Livro.Titulo,
+		COUNT(Tag.Nome)
+FROM Livro
+INNER JOIN LivroTag ON (LivroTag.IDLivro = Livro.ID)
+INNER JOIN Tag ON (Tag.ID = LivroTag.IDTag)
+GROUP BY Livro.Titulo
+HAVING COUNT(Tag.Nome) > 1
+
+--VIEWS
+CREATE VIEW LivroComCategoria
+AS
+SELECT  Livro.Titulo,
+		Categoria.Nome Categoria
+from Livro
+INNER JOIN Categoria ON (Livro.IDCategoria = Categoria.ID)
+
+select * 
+from LivroComCategoria
+
+--criar select que partindo da view LivroComCategoria
+--traga LivroComCategoria.Titulo, LivroComCategoria.Categoria
+--e Autor.Nome
+--somente dos livros que tem autor relacionado
+
+SELECT  LivroComCategoria.Titulo,
+		LivroComCategoria.Categoria,
+		Autor.Nome
+FROM LivroComCategoria
+INNER JOIN Livro ON (Livro.Titulo = LivroComCategoria.Titulo)
+INNER JOIN LivroAutor ON (LivroAutor.IDLivro = Livro.ID)
+INNER JOIN Autor ON (Autor.ID = LivroAutor.IDAutor)
+
+ALTER VIEW LivroComCategoria
+AS
+SELECT  Livro.ID AS IDLivro,
+		Livro.Titulo,
+		Categoria.Nome Categoria
+from Livro
+INNER JOIN Categoria ON (Livro.IDCategoria = Categoria.ID)
+
+SELECT  LivroComCategoria.Titulo,
+		LivroComCategoria.Categoria,
+		Autor.Nome
+FROM LivroComCategoria
+INNER JOIN Livro ON (Livro.ID = LivroComCategoria.IDLivro)
+INNER JOIN LivroAutor ON (LivroAutor.IDLivro = Livro.ID)
+INNER JOIN Autor ON (Autor.ID = LivroAutor.IDAutor)
+
+--DROP VIEW LivroComCategoria
+
+--INDICE
+CREATE INDEX IDX_Socio ON Locacao(IDSocio)
+
+DROP INDEX idx_socio ON Locacao
+
+--STORED PROCEDURE
+ALTER PROC InserirTag @Nome VARCHAR(200), @Par2 INT
+AS
+BEGIN
+	INSERT INTO Tag (Nome) VALUES (@Nome)	
+
+	DECLARE @UltimaTag INT;
+
+	SELECT @UltimaTag = MAX(ID) FROM Tag;
+
+	INSERT INTO LivroTag 
+	SELECT  Livro.ID,
+			@UltimaTag
+	FROM Livro
+END
+
+EXECUTE InserirTag 'EXE'
+
+select * from Tag
+select * from LivroTag
+
+--excluir SP (Stored Procedure)
+--DROP PROC InserirTag
+
+
+--CREATE PROC MinhaProc @Par1 VARCHAR(200), @Par2 INT
+
+--criar uma SP para inserir novos livros
+--tendo como parâmetros titulo, datapublicacao, edicao,
+--codigoSequencial, idcategoria
+CREATE PROC InserirLivro @Titulo VARCHAR(100), 
+@DataPublicacao DATE, @Edicao VARCHAR(100),
+@CodigoSequencial INT, @IDCategoria INT
+AS
+BEGIN
+	INSERT INTO Livro VALUES
+	(@Titulo, @DataPublicacao, @Edicao, @CodigoSequencial, @IDCategoria)
+END
+
+EXECUTE InserirLivro 'A Menina Que Roubava Livros', 
+'2017-10-10', 3, 4903, 1
+
+EXECUTE InserirLivro 'O milagre da manhã', 
+'2016-05-03', 1, 277, 1
+
+EXECUTE InserirLivro 'O poder do hábito', 
+'2015-02-20', 2, 546, 1
+
+select * from Socio
+
+CREATE PROC InserirSocio @Nome VARCHAR(100), 
+@Sobrenome VARCHAR(100), @DataNascimento DATE,
+@Profissao VARCHAR(100), @Sexo VARCHAR(1)
+AS
+BEGIN
+	INSERT INTO Socio VALUES
+	(@Nome, @Sobrenome, @DataNascimento, @Profissao, @Sexo)
+END
+
+EXEC InserirSocio 'João', 'Silva', '1980-07-28', 'Analista', 'M'
+EXEC InserirSocio 'Maria', 'Silva', '1992-02-13', 'Advogada', 'F'
+
+CREATE PROC InserirAutor @Nome VARCHAR(100), @Sobrenome VARCHAR(100), 
+@DataNascimento DATE
+AS
+BEGIN
+	INSERT INTO Autor VALUES (@Nome, @Sobrenome, @DataNascimento)
+END
+
+EXEC InserirAutor 'Markus', 'Zusak', ''
+EXEC InserirAutor 'Hal', 'Elrod', ''
+EXEC InserirAutor 'Charles', 'Duhigg', ''
+
+SELECT * FROM lIVRO where id> 3
+SELECT * FROM AUTOR where id>2
+
+INSERT INTO LivroAutor VALUES (4, 4)
+INSERT INTO LivroAutor VALUES (5, 5)
+INSERT INTO LivroAutor VALUES (6, 6)
+
+INSERT INTO Locacao VALUES ('2019-10-01', '2019-10-11', NULL, 1)
+INSERT INTO Locacao VALUES ('2019-10-05', '2019-10-15', NULL, 2)
+
+INSERT INTO LocacaoLivro VALUES (4, 1)
+INSERT INTO LocacaoLivro VALUES (5, 1)
+INSERT INTO LocacaoLivro VALUES (6, 2)
+
+--criar select partindo da tabela Locacao
+--retornar dataretirada, dataprevisaodevolucao, datadevolucao,
+--nome socio, nome autor, titulo do livro e data publicacao do livro
+
+SELECT  Locacao.DataRetirada AS DataRetirada,
+		Locacao.DataPrevisaoDevolucao  AS DataPrevisao,
+		Locacao.DataDevolucao AS DataDevolucao,
+		Socio.Nome + ' ' + Socio.Sobrenome AS Socio,
+		Autor.Nome + ' ' + Autor.Sobrenome AS Autor,
+		Livro.Titulo AS Titulo,
+		Livro.DataPublicacao AS DataPublicacao
+FROM Locacao
+INNER JOIN Socio ON (Socio.ID = Locacao.IDSocio) 
+INNER JOIN LocacaoLivro ON (LocacaoLivro.IDLocacao = Locacao.ID)
+INNER JOIN Livro ON (Livro.ID = LocacaoLivro.IDLivro)
+INNER JOIN LivroAutor ON (LivroAutor.IDLivro = Livro.ID)
+INNER JOIN Autor ON (Autor.ID = LivroAutor.IDAutor)
+
+
+
+
+
+
+
+
+
+
